@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+	<head>
+		<meta http-equiv="pragma" content="no-cache">
+		<meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
+		<meta http-equiv="expires" content="Fri, 8 Aug 2008 08:08:00 GMT">
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=2.0, user-scalable=yes">
+		<title>洋葱内网管理系统接入示例</title>
+		<style type="text/css">
+html,body,h1,h2,table,th,td,input{ margin: 0; padding: 0;}
+html{ height: 100%;  overflow: hidden;}
+body{ background: #C3E9FF; text-align: center; font-family: Microsoft Yahei; color: #666; overflow: hidden;}
+h1#logo{ height: 81px; background-image:url("brand.png"); _background-image:url("brand.png"); background-repeat: no-repeat; background-position: center top; background-size: auto 60px;}
+h2#slogan{ margin: 0 0 15px; text-align: center; font-size: 20px; font-weight: normal; color: #fff;}
+h4#jump{ margin: 0 15 15px; text-align: center; font-size: 12px; font-weight: normal; color: #fff;}
+a{color:#F8F8FF; font-size: 15px;}
+#box_main{text-align: center}
+#qrcode-box{display: inline-block; margin: 0 auto; min-width: 230px; min-height: 235px; background-color: #684099; padding: 10px; font-size: 15px;}
+#qrcode-box table{margin: 0 auto}
+#input-box{display: none; margin: 0 auto; min-width: 230px; min-height: 160px; background-color: #684099; padding: 10px;}
+#input-box table{margin: 0 auto}
+#loading-box{display: none; margin: 0 auto; min-width: 230px; min-height: 160px; background-color: #684099; padding: 10px;}
+#end-box{display: none; margin: 0 auto; min-width: 230px; min-height: 160px; background-color: #684099; padding: 10px;}
+
+.box{ width: 300px; margin: 50px auto; background: #684099; padding: 30px 15px; text-align: left; opacity: 0.9; }
+.txt{ height: 23px; line-height: 23px; border: 1px solid #ccc; padding: 2px 4px; border-radius: 0;}
+.input{ width: 230px; height: 30px; font-size: 20px; line-height: 30px;}
+.bigbtn{ width: 100px; height: 40px; border: none; background: #00B6FF; font-size: 18px; color: #fff;  cursor: pointer; background-position: center bottom;background-size: auto 60px;}
+/* .theme{ background: #684099;} */
+/* .theme{ background: #C3E9FF;} */
+
+.loading {
+  display: inline-block;
+  margin: 30px auto 30px;
+  width: 100px;
+  height: 100px;
+  border: 10px solid rgba(255, 255, 255, 0.3);
+  border-left-color: white;
+  border-radius: 50%;
+  -webkit-animation: loading 1s linear infinite;
+          animation: loading 1s linear infinite;
+}
+@-webkit-keyframes loading {
+  from {
+    -webkit-transform: rotate(0deg);
+            transform: rotate(0deg);
+  }
+  to {
+    -webkit-transform: rotate(360deg);
+            transform: rotate(360deg);
+  }
+}
+@keyframes loading {
+  from {
+    -webkit-transform: rotate(0deg);
+            transform: rotate(0deg);
+  }
+  to {
+    -webkit-transform: rotate(360deg);
+            transform: rotate(360deg);
+  }
+}
+
+/* Mobile devices */
+@media (min-width: 320px) and (max-width: 768px) {
+	.box{ width: 80%;}
+}
+@media (max-width: 320px) {
+}
+		</style>
+	</head>
+	<body class="theme">
+		<div class="box" id="frame_main">
+			<h1 id="logo"></h1>
+			<h2 id="slogan">请用洋葱客户端扫描下方二维码</h2>
+			<div id="box_main">
+				<div id="qrcode-box">
+					<div class="loading"></div>
+				</div>
+				<div id="input-box">
+					<p id="input_notice"></p>
+					<input id="username" type="text" name="fname" class="input" placeholder="请输入您的用户名"/>
+					<br><br>
+					<input type="submit" value="马上开始" class="bigbtn" onclick="submit_uname()"/>
+				</div>
+				<div id="loading-box">
+					<div class="loading"></div>
+					<div id="loading_notice"></div>
+				</div>
+				<div id="loading-box">
+					<div class="loading"></div>
+					<div id="loading_notice"></div>
+				</div>
+				<div id="end-box">
+					<div class="box"></div>
+					<div id="end_notice"></div>
+				</div>
+			</div>
+			<h4 id="jump">点击这里<a href="javascript:username_login();">用户名登录</a></h4>
+		</div>
+		<script type="text/javascript" src="jquery.min.js"></script>
+		<script type="text/javascript" src="jquery.qrcode.min.js"></script>
+		<script>
+var url = location.origin + "/YcAuth.php";
+var old_url = GetQueryString("url");
+var h = null;
+
+qrcode_login();
+
+function auth(username) {
+	$.getJSON(url+"?Action=AskYangAuthPush&username=" + username, function(data){
+		if (data.status == 200) {
+			username_loading();
+			getResult(data.event_id);
+		} else {
+			$("#input_notice").html("<font color=\"FFFFFF\">用户名错误，请重新输入</font>");
+		}
+	}, "json");
+
+}
+
+function getQrcode() {
+	$.getJSON(url+"?Action=GetYcAuthQrCode", function(data) {
+		if(data.status == 200) {
+			$("#qrcode-box").empty();
+			$("#qrcode-box").css("backgroundColor","#FFFFFF");
+			$("#qrcode-box").qrcode({
+				width: 230,
+				height: 230,
+				text: data.qrcode_data
+			});
+			getResult(data.event_id);
+		}
+	});
+}
+
+function getResult(event_id){
+	h = setInterval(function() {
+		$.getJSON(url+"?Action=CheckYcAuthResult&eid=" + event_id, function(data){
+			if (data.status != 602) {
+				box_type(3);
+				$("#end-box").empty();
+				if (data.status == 200) {
+					$("#end-box").html("<br><br><br><font color=\"FFFFFF\">认证成功！<font>");
+				} else if (data.status == 900) {
+					$("#end-box").html("<br><br><br><font color=\"FFFFFF\">对不起，您没有权限<font>");
+				} else {
+					$("#end-box").html("<br><br><br><font color=\"FFFFFF\">啊哦，出错了:" +
+							data.status + "</font>");
+				}
+				clearInterval(h);
+				h = null;
+			}
+		}, "json");
+	}, 2000);
+}
+
+function submit_uname(){
+	var username = $("#username").val();
+	auth(username);
+}
+
+function GetQueryString(name) {
+	var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
+	var r = window.location.search.substr(1).match(reg);
+	if(r != null)
+		return  unescape(r[2]);
+	return null;
+}
+
+function username_login() {
+	if (h != null) {
+		clearInterval(h);
+	}
+	$("#slogan").html("请在下方输入您的用户名");
+	$("#input_notice").empty();
+	box_type(1);
+	$("#jump").html("点击这里<a href=\"javascript:qrcode_login();\">二维码登录</a>");
+}
+
+function qrcode_login() {
+	if (h != null) {
+		clearInterval(h);
+	}
+	$("#slogan").html("请用洋葱客户端扫描下方二维码");
+	box_type(0);
+	getQrcode();
+	$("#jump").html("点击这里<a href=\"javascript:username_login();\" >用户名登录</a>");
+}
+
+function username_loading() {
+	$("#slogan").html("请在洋葱客户端上进行确认");
+	box_type(2);
+	$("#jump").html("<a href=\"javascript:username_login();\" >再来一次？</a>");
+}
+
+function qrcode_loading() {
+	$("#slogan").html("认证成功，网页即将跳转");
+	box_type(2);
+}
+
+//0=qrcode 1=input
+function box_type(type) {
+	$qrcode_box = $('#qrcode-box');
+	$input_box = $('#input-box');
+	$loading_box = $('#loading-box');
+	$end_box = $('#end-box');
+
+	switch (type) {
+		///0=qrcode
+		case 0 :
+			$qrcode_box.show();
+			$input_box.hide();
+			$loading_box.hide();
+			$end_box.hide();
+			break;
+			//1=input
+		case 1 :
+			$qrcode_box.hide();
+			$input_box.show();
+			$loading_box.hide();
+			$end_box.hide();
+			break;
+		// 2 = loading
+		case 2 :
+			$qrcode_box.hide();
+			$input_box.hide();
+			$loading_box.show();
+			$end_box.hide();
+			break;
+		// 3 = end
+		case 3 :
+			$qrcode_box.hide();
+			$input_box.hide();
+			$loading_box.hide();
+			$end_box.show();
+			break;
+		default :
+			$qrcode_box.show();
+			$input_box.show();
+			break;
+	}
+}
+
+$.fn.show = function() {
+	$(this).css("display", "inline-block");
+}
+		</script>
+	</body>
+</html>
