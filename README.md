@@ -41,6 +41,7 @@ To install Secken-PrivateAuthSdk-For-Php, Import these packages
 ```
 include_once 'secken_private.class.php';
 ```
+
 ## 更新发布（Update & Release Notes）
 
 ```
@@ -131,7 +132,7 @@ if ( $secken_api->getCode() != 200 ){
 	echo $json;
 }
 ```
-AskYangAuthPush接口包含两个必传参数：AuthType、UserId；两个可选参数：ActionType、ActionDetail。  
+AskYangAuthPush接口包含两个必传参数：UserName。  
 
 |    状态码   | 		状态详情 		  |
 |:----------:|:-----------------:|
