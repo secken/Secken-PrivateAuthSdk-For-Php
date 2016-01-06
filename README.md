@@ -143,3 +143,4 @@ AskYangAuthPush接口包含两个必传参数：AuthType、UserId；两个可选
 |  500       |       系统错误                |
 |  608       |       验证token不存在           |
 |  609       |       ip地址被禁                |
+
